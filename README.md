@@ -66,7 +66,8 @@ After consolidation the tool **asks before deleting anything**. Fragments can be
 
 | Path | What it is |
 |------|-----------|
-| `skills/od-hermes-session-reuse/SKILL.md` | The drop-in Hermes skill: diagnosis map, patch chain, verification steps, pitfalls |
+| `skills/od-hermes-session-reuse/SKILL.md` | Skill 1 — the patch chain: diagnosis map, 8 fixes, verification steps, pitfalls |
+| `skills/od-fragment-consolidator/SKILL.md` | Skill 2 — merge fragments into per-project ledgers, rename to OD project names, interactive cleanup |
 | `scripts/diagnose.py` | Read-only health check: counts fragments, detects which of the 8 defects apply to your install |
 | `scripts/consolidate.py` | The consolidator: envelope→voice translation + per-project merge + interactive cleanup |
 | `docs/PATCHES.md` | The 8 patches in surgical detail (exact anchors, backups, rollback) |
