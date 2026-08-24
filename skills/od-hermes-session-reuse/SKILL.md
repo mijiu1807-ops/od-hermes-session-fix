@@ -110,13 +110,7 @@ persist_user_message=_extract_user_voice(user_text) or "[Image attachment]",
 
 ## Fragment Consolidation (history cleanup)
 
-See `scripts/consolidate.py` in the repo. Pipeline:
-
-1. Translate stored envelopes to user voice (same extraction, two-pass for inline history markers).
-2. Assign each ACP fragment to an OD project via the `projects/<uuid>` path embedded in envelopes; fallback: activity-window overlap with OD conversations (coverage ≥ 50%, tighter window wins ties).
-3. Merge messages into each project's newest session ("ledger") by rewriting `session_id` — Hermes resumes by auto-increment row id, so the timeline stays chronological with zero extra work.
-4. Rename ledgers to the OD project's name; pre-fill OD's `agent_sessions` mapping (no unique constraint — use DELETE+INSERT in a transaction).
-5. **Ask the user** before any cleanup: archive (recommended, reversible), keep, or delete the emptied fragments.
+Hand off to the sibling skill `od-fragment-consolidator` (and `scripts/consolidate.py`): envelope-to-voice translation, per-project merge, ledger renaming, OD mapping pre-fill, and interactive cleanup of the emptied fragments.
 
 ## Pitfalls (all hit in production)
 
