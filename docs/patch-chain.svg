@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="360" viewBox="0 0 880 360">
+  <defs>
+    <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1117"/><stop offset="1" stop-color="#161b22"/>
+    </linearGradient>
+  </defs>
+  <rect width="880" height="360" fill="url(#bg2)"/>
+  <text x="440" y="40" text-anchor="middle" fill="#e6edf3" font-family="Segoe UI" font-size="20" font-weight="700">The patch chain: message → session/reuse → clean transcript</text>
+
+  <!-- lane labels -->
+  <text x="70" y="80" fill="#58a6ff" font-family="Segoe UI" font-size="14" font-weight="700">OpenDesign side</text>
+  <text x="640" y="80" fill="#3fb950" font-family="Segoe UI" font-size="14" font-weight="700">Hermes side</text>
+  <line x1="440" y1="60" x2="440" y2="330" stroke="#30363d" stroke-dasharray="6 4"/>
+
+  <!-- flow nodes -->
+  <g font-family="Consolas, monospace" font-size="11">
+    <!-- user types -->
+    <rect x="30" y="95" width="150" height="40" rx="6" fill="#1f2937" stroke="#4b5563"/>
+    <text x="105" y="113" text-anchor="middle" fill="#e6edf3">user types 你好</text>
+    <text x="105" y="127" text-anchor="middle" fill="#8b949e">+ charter envelope</text>
+    <!-- ② -->
+    <rect x="30" y="155" width="150" height="44" rx="6" fill="#112244" stroke="#58a6ff"/>
+    <text x="105" y="172" text-anchor="middle" fill="#58a6ff" font-weight="700">② resumesSessionViaAcpLoad</text>
+    <text x="105" y="188" text-anchor="middle" fill="#8b949e">reuse, not session/new</text>
+    <!-- ③ -->
+    <rect x="30" y="219" width="150" height="44" rx="6" fill="#112244" stroke="#58a6ff"/>
+    <text x="105" y="236" text-anchor="middle" fill="#58a6ff" font-weight="700">③ sessionId fallback</text>
+    <text x="105" y="252" text-anchor="middle" fill="#8b949e">mapping table fills</text>
+    <!-- ④ -->
+    <rect x="30" y="283" width="150" height="44" rx="6" fill="#112244" stroke="#58a6ff"/>
+    <text x="105" y="300" text-anchor="middle" fill="#58a6ff" font-weight="700">④ mcpServers on load</text>
+    <text x="105" y="316" text-anchor="middle" fill="#8b949e">no more Invalid params</text>
+
+    <!-- arrows left column -->
+    <path d="M105 135 L105 155" stroke="#58a6ff" stroke-width="2" marker-end="url(#ab)"/>
+    <path d="M105 199 L105 219" stroke="#58a6ff" stroke-width="2" marker-end="url(#ab)"/>
+    <path d="M105 263 L105 283" stroke="#58a6ff" stroke-width="2" marker-end="url(#ab)"/>
+
+    <!-- center: session/load handshake -->
+    <rect x="330" y="219" width="220" height="60" rx="8" fill="#1f2937" stroke="#e3b341"/>
+    <text x="440" y="243" text-anchor="middle" fill="#e3b341" font-weight="700">session/load handshake</text>
+    <text x="440" y="262" text-anchor="middle" fill="#8b949e">⑤ response echoes sessionId</text>
+    <path d="M180 305 C 260 305 260 265 330 258" stroke="#e3b341" stroke-width="2" fill="none" marker-end="url(#ay)"/>
+    <defs>
+      <marker id="ab" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#58a6ff"/></marker>
+      <marker id="ay" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#e3b341"/></marker>
+      <marker id="ag" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#3fb950"/></marker>
+    </defs>
+
+    <!-- hermes side nodes -->
+    <rect x="700" y="95" width="160" height="44" rx="6" fill="#0f2417" stroke="#3fb950"/>
+    <text x="780" y="112" text-anchor="middle" fill="#3fb950" font-weight="700">⑥ persist user voice</text>
+    <text x="780" y="128" text-anchor="middle" fill="#8b949e">你好，not the envelope</text>
+    <rect x="700" y="159" width="160" height="44" rx="6" fill="#0f2417" stroke="#3fb950"/>
+    <text x="780" y="176" text-anchor="middle" fill="#3fb950" font-weight="700">⑦ skip replay for OD</text>
+    <text x="780" y="192" text-anchor="middle" fill="#8b949e">no duplicate history</text>
+    <rect x="690" y="223" width="180" height="44" rx="6" fill="#0f2417" stroke="#3fb950"/>
+    <text x="780" y="240" text-anchor="middle" fill="#3fb950" font-weight="700">consolidate.py</text>
+    <text x="780" y="256" text-anchor="middle" fill="#8b949e" font-size="10">merge fragments by project</text>
+
+    <path d="M550 249 C 620 249 630 200 700 181" stroke="#3fb950" stroke-width="2" fill="none" marker-end="url(#ag)"/>
+  </g>
+
+  <!-- result strip -->
+  <rect x="30" y="336" width="820" height="0" fill="none"/>
+  <text x="440" y="348" text-anchor="middle" fill="#e6edf3" font-family="Segoe UI" font-size="12">Result: one OD project window = one Hermes session · sidebar shows your words · fragments merged into per-project ledgers</text>
+</svg>
