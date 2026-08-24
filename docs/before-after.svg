@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="420" viewBox="0 0 880 420">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1117"/><stop offset="1" stop-color="#161b22"/>
+    </linearGradient>
+    <linearGradient id="red" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f85149"/><stop offset="1" stop-color="#8b1a13"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3fb950"/><stop offset="1" stop-color="#1a7f37"/>
+    </linearGradient>
+  </defs>
+  <rect width="880" height="420" fill="url(#bg)"/>
+  <text x="440" y="42" text-anchor="middle" fill="#e6edf3" font-family="Segoe UI, sans-serif" font-size="22" font-weight="700">OD × Hermes: session entropy → one session per project</text>
+
+  <!-- BEFORE panel -->
+  <text x="60" y="86" fill="#f85149" font-family="Segoe UI" font-size="15" font-weight="600">BEFORE — a session per message</text>
+  <g font-family="Consolas, monospace" font-size="11" fill="#8b949e">
+    <!-- sidebar -->
+    <rect x="60" y="100" width="300" height="280" rx="8" fill="#0d1117" stroke="#30363d"/>
+    <text x="76" y="122" fill="#e6edf3" font-size="12" font-weight="600">HERMES SIDEBAR</text>
+    <g>
+      <rect x="76" y="134" width="268" height="22" rx="4" fill="url(#red)" opacity="0.85"/>
+      <text x="86" y="149" fill="#fff"># Instructions (read first)</text>
+      <rect x="76" y="160" width="268" height="22" rx="4" fill="url(#red)" opacity="0.75"/>
+      <text x="86" y="175" fill="#fff">Set up OpenDesign ask mode #7</text>
+      <rect x="76" y="186" width="268" height="22" rx="4" fill="url(#red)" opacity="0.7"/>
+      <text x="86" y="201" fill="#fff">Example prompt mode setup #2</text>
+      <rect x="76" y="212" width="268" height="22" rx="4" fill="url(#red)" opacity="0.65"/>
+      <text x="86" y="227" fill="#fff">OpenDesign designer charter</text>
+      <rect x="76" y="238" width="268" height="22" rx="4" fill="url(#red)" opacity="0.6"/>
+      <text x="86" y="253" fill="#fff">Review open design charter</text>
+      <rect x="76" y="264" width="268" height="22" rx="4" fill="url(#red)" opacity="0.55"/>
+      <text x="86" y="279" fill="#fff">Configure prompt injection resi…</text>
+      <rect x="76" y="290" width="268" height="22" rx="4" fill="url(#red)" opacity="0.5"/>
+      <text x="86" y="305" fill="#fff">Set up example prompt mode</text>
+      <rect x="76" y="316" width="268" height="22" rx="4" fill="#30363d"/>
+      <text x="86" y="331" fill="#8b949e">… 90+ more like these</text>
+    </g>
+    <text x="210" y="368" text-anchor="middle" fill="#f85149" font-size="13" font-weight="700">105 sessions · grows every message</text>
+  </g>
+
+  <!-- arrow -->
+  <g>
+    <path d="M 395 240 L 475 240" stroke="#e6edf3" stroke-width="3" marker-end="url(#arrowh)"/>
+    <defs><marker id="arrowh" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#e6edf3"/></marker></defs>
+    <text x="435" y="225" text-anchor="middle" fill="#e6edf3" font-family="Segoe UI" font-size="13" font-weight="700">8 patches</text>
+    <text x="435" y="262" text-anchor="middle" fill="#8b949e" font-family="Segoe UI" font-size="11">+ consolidation</text>
+  </g>
+
+  <!-- AFTER panel -->
+  <text x="520" y="86" fill="#3fb950" font-family="Segoe UI" font-size="15" font-weight="600">AFTER — one session per project</text>
+  <g font-family="Segoe UI, sans-serif" font-size="11">
+    <rect x="520" y="100" width="300" height="280" rx="8" fill="#0d1117" stroke="#30363d"/>
+    <text x="536" y="122" fill="#e6edf3" font-size="12" font-weight="600" font-family="Consolas, monospace">HERMES SIDEBAR</text>
+    <g>
+      <rect x="536" y="134" width="268" height="44" rx="6" fill="url(#green)" opacity="0.9"/>
+      <text x="548" y="152" fill="#fff" font-size="12" font-weight="600">「初中英语—邬念慈 2」</text>
+      <text x="548" y="169" fill="#c9f7d2" font-family="Consolas, monospace" font-size="10">1,116 msgs · full timeline</text>
+      <rect x="536" y="184" width="268" height="44" rx="6" fill="url(#green)" opacity="0.8"/>
+      <text x="548" y="202" fill="#fff" font-size="12" font-weight="600">「初中英语—邬念慈 1」</text>
+      <text x="548" y="219" fill="#c9f7d2" font-family="Consolas, monospace" font-size="10">546 msgs · full timeline</text>
+      <rect x="536" y="234" width="268" height="44" rx="6" fill="url(#green)" opacity="0.7"/>
+      <text x="548" y="252" fill="#fff" font-size="12" font-weight="600">Game UI - Ancient China MMO HUD</text>
+      <text x="548" y="269" fill="#c9f7d2" font-family="Consolas, monospace" font-size="10">291 msgs · full timeline</text>
+      <rect x="536" y="284" width="268" height="44" rx="6" fill="url(#green)" opacity="0.6"/>
+      <text x="548" y="302" fill="#fff" font-size="12" font-weight="600">Hyperframes</text>
+      <text x="548" y="319" fill="#c9f7d2" font-family="Consolas, monospace" font-size="10">50 msgs · full timeline</text>
+      <rect x="536" y="334" width="268" height="22" rx="4" fill="#30363d"/>
+      <text x="546" y="349" fill="#8b949e" font-family="Consolas, monospace" font-size="10">new session only when a new project starts</text>
+    </g>
+    <text x="670" y="372" text-anchor="middle" fill="#3fb950" font-size="13" font-weight="700">5 ledgers · zero entropy growth</text>
+  </g>
+</svg>
