@@ -55,13 +55,13 @@
     <text x="536" y="122" fill="#e6edf3" font-size="12" font-weight="600" font-family="Consolas, monospace">HERMES SIDEBAR</text>
     <g>
       <rect x="536" y="134" width="268" height="44" rx="6" fill="url(#green)" opacity="0.9"/>
-      <text x="548" y="152" fill="#fff" font-size="12" font-weight="600">「初中英语—邬念慈 2」</text>
+      <text x="548" y="152" fill="#fff" font-size="12" font-weight="600">Website Landing Page</text>
       <text x="548" y="169" fill="#c9f7d2" font-family="Consolas, monospace" font-size="10">1,116 msgs · full timeline</text>
       <rect x="536" y="184" width="268" height="44" rx="6" fill="url(#green)" opacity="0.8"/>
-      <text x="548" y="202" fill="#fff" font-size="12" font-weight="600">「初中英语—邬念慈 1」</text>
+      <text x="548" y="202" fill="#fff" font-size="12" font-weight="600">Pitch Deck — PPT</text>
       <text x="548" y="219" fill="#c9f7d2" font-family="Consolas, monospace" font-size="10">546 msgs · full timeline</text>
       <rect x="536" y="234" width="268" height="44" rx="6" fill="url(#green)" opacity="0.7"/>
-      <text x="548" y="252" fill="#fff" font-size="12" font-weight="600">Game UI - Ancient China MMO HUD</text>
+      <text x="548" y="252" fill="#fff" font-size="12" font-weight="600">UI HUD - Game Interface</text>
       <text x="548" y="269" fill="#c9f7d2" font-family="Consolas, monospace" font-size="10">291 msgs · full timeline</text>
       <rect x="536" y="284" width="268" height="44" rx="6" fill="url(#green)" opacity="0.6"/>
       <text x="548" y="302" fill="#fff" font-size="12" font-weight="600">Hyperframes</text>
