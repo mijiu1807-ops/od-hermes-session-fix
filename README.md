@@ -44,7 +44,7 @@ Hermes stores what the model should see; your sidebar, titles, and search now st
 
 ```
 Before (stored):  # Instructions (read first)\n# Open Design charter\n...(3,432 chars of English)...
-After  (stored):  你好，在吗？
+After  (stored):  "Hi, are you there?"
 ```
 
 The model still receives the full envelope (it needs the project context) — only the archive is cleaned.
@@ -115,7 +115,7 @@ Tested on a real installation with 105 sessions / 3,455 messages accumulated ove
 
 ## Language
 
-The skill and scripts run inside an LLM agent: **they converse in whatever language you use.** Documentation is English for maximum reach; the runtime experience adapts to you (中文用户全程中文交互).
+The skill and scripts run inside an LLM agent: **they converse in whatever language you use.** Documentation is English for maximum reach; the runtime experience adapts to you — a Chinese-language user gets a fully Chinese session, a Spanish user gets Spanish, and so on.
 
 ## License
 
