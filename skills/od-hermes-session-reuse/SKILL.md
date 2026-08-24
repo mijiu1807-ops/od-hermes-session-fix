@@ -2,7 +2,7 @@
 name: od-hermes-session-reuse
 author: ox-alpha (design profile)
 description: Use when OD chat spawns a Hermes session per message.
-version: 1.0.0
+version: 1.1.0
 license: MIT
 metadata:
   hermes:
@@ -10,126 +10,129 @@ metadata:
     category: integration
 ---
 
-# OD ↔ Hermes 会话复用闭环（一个项目一个会话）
+# OD ↔ Hermes Session Reuse (one project = one session)
 
-## 概述
+## Overview
 
-OD（Open Design）桌面端通过 ACP 驱动 Hermes。默认配置下存在 8 个断点，导致：每句话新开一个 session、标题全是英文信封首行、resume 时旧历史重播刷屏、存档里找不到用户原话。本技能是完整的诊断+修复流程，全部改动可回滚。
+OpenDesign (OD) drives Hermes Agent over ACP. The stock integration has 8 defects that compound into unusable session entropy: a new session per message, template-named titles, history replay spam, and envelopes burying the user's actual words. This skill is the complete diagnosis + repair playbook. Every change is reversible.
 
-**核心认知**：OD 每回合把"charter 信封"（英文指令包：项目上下文+工作区+规则）包住用户原话一起发；信封尾部标记有两种——`## user` 和 `# User request`。
+**Core mental model**: OD wraps every user turn in a "charter envelope" (an English instruction pack: project context + workspace + rules) with the user's real words at the tail. The tail marker comes in two variants: `## user` and `# User request`.
 
 ## When to Use
 
-- OD 侧边栏每句话冒一个新 session，标题是 `# Instructions (read first)` / `Set up OpenDesign ask mode` 等
-- 用户问"为什么 Hermes 里看不到我发的中文"
-- resume 后 OD 窗口重复回放几小时前的旧回复
-- `hermes sessions list` 里 ACP 会话数异常膨胀
-- 用户想"一个 OD 项目窗 = 一个 Hermes 会话"
+- The OD sidebar spawns a new session per message, titled `# Instructions (read first)` / `Set up OpenDesign ask mode` etc.
+- The user asks "why can't I see my own words in Hermes?"
+- Resume replays hours-old replies into the OD window before answering
+- `hermes sessions list` ACP count balloons
+- The user wants "one OD project window = one Hermes session"
+- Historical fragments need consolidation into per-project ledgers
 
-## 8 断点地图（诊断顺序 = 修复顺序）
+## The 8-Defect Map (diagnosis order = repair order)
 
-| # | 断点 | 症状 | 修复位置 |
-|---|------|------|---------|
-| ② | OD 未对 Hermes 开会话复用 | 每回合 session/new | OD: `hermesAgentDef` 加 `resumesSessionViaAcpLoad: true` |
-| ③ | 会话句柄只认 OpenCode 专有字段 | `agent_sessions` 表恒 0 行 | OD: `durableSessionId = result.openCodeSessionId ?? result.sessionId` |
-| ④ | session/load 缺 `mcpServers` | OD 窗口报 `json-rpc id 2: Invalid params` | OD: load 请求补 `mcpServers: mcpServers ?? []` |
-| ⑤ | load 响应缺 sessionId | OD 报 `invalid session/new response`（JSON 里能看到 currentHermesSessionId 说明 resume 已通） | Hermes: `acp/schema.py` LoadSessionResponse 加 `session_id` 字段 + server.py 回显 |
-| ⑥ | 存档存整个信封 | 桌面端/标题/检索全是英文信封 | Hermes: `_extract_user_voice()` 只存信封尾原话 |
-| ⑦ | resume 重播全部历史 | OD 窗每句话先重播旧回复 | Hermes: OD 客户端跳过 `_replay_session_history` |
-| — | 正则漏信封变体 | 提取函数静默返回原文 | 正则 `#{1,4}\s*(?:user|User request)\s*\r?\n` 两种标记全盖 |
+| # | Defect | Symptom | Fix location |
+|---|--------|---------|--------------|
+| ② | Session reuse not enabled for Hermes | `session/new` every turn | OD: `hermesAgentDef` + `resumesSessionViaAcpLoad: true` |
+| ③ | Capture reads only OpenCode's `openCodeSessionId` | `agent_sessions` table stays 0 rows | OD: fallback to standard `result.sessionId` |
+| ④ | `session/load` missing `mcpServers` | OD shows `json-rpc id 2: Invalid params` | OD: add `mcpServers: mcpServers ?? []` |
+| ⑤ | Load response lacks `sessionId` | OD: `invalid session/new response` (JSON contains `currentHermesSessionId` = resume already worked) | Hermes: `acp/schema.py` add field + echo |
+| ⑥ | Full envelope persisted | titles/transcripts/search show English boilerplate | Hermes: `_extract_user_voice()` keeps only the tail |
+| ⑦ | Resume replays all history | OD re-renders old replies every message | Hermes: skip `_replay_session_history` for OD clients |
+| ⑥b | Envelope tail has two marker variants | extraction silently no-ops | regex `#{1,4}\s*(?:user|User request)\s*\r?\n` covers both |
 
-**②③④在 OD 侧，⑤⑥⑦在 Hermes 侧。** ①（16:9 尺寸映射）是另一个独立补丁，见"相关"。
+②③④ live on the OD side; ⑤⑥⑦ on the Hermes side.
 
-## 关键路径
+## Key Paths
 
 ```
-OD 运行时真身（patch 这里才有效！）：
-C:\Users\<user>\AppData\Roaming\Open Design\launcher\channels\stable\
-  namespaces\release-stable-win\versions\<版本>\payload\resources\app\prebundled\daemon\chunks\
-  - chunk-4IN7PJG2.mjs   → hermesAgentDef（断点②）
-  - chunk-EER2BOWK.mjs   → ACP 客户端（断点③④）
-  - chunk-N7AF5FHP.mjs   → AIHUBMIX_IMAGE_ASPECT_TO_SIZE（16:9 尺寸）
+OD runtime payload (patch HERE — not the install dir!):
+  %APPDATA%\Open Design\launcher\channels\stable\namespaces\
+    release-stable-win\versions\<VERSION>\payload\resources\app\prebundled\daemon\chunks\
+  - chunk-4IN7PJG2.mjs   → hermesAgentDef          (defect ②)
+  - chunk-EER2BOWK.mjs   → ACP client transport    (defects ③④)
+  - chunk-N7AF5FHP.mjs   → image size mapping      (bonus, unrelated)
 
-⚠️ D:\Open—Design 安装目录下的同名文件只被 CLI/MCP 桥使用，patch 无效！
-   用进程命令行取证：daemon-sidecar.mjs 的完整路径就是真身。
+⚠ Copies under the OD install directory (D:\...\prebundled\daemon\) are used
+  only by the CLI/MCP bridge — patching them changes nothing for chat.
+  Prove the runtime path from the daemon-sidecar process command line.
 
-Hermes 侧：
-- <hermes-agent>/venv/Lib/site-packages/acp/schema.py   → LoadSessionResponse（断点⑤）
-- <hermes-agent>/acp_adapter/server.py                   → load/resume/prompt（断点⑤⑥⑦）
-- <hermes-agent>/acp_adapter/session.py                  → SessionState 加字段（断点⑦）
+Hermes side:
+- <hermes-agent>/venv/Lib/site-packages/acp/schema.py   → LoadSessionResponse (⑤)
+- <hermes-agent>/acp_adapter/server.py                  → load/resume/prompt  (⑤⑥⑦)
+- <hermes-agent>/acp_adapter/session.py                 → SessionState fields (⑦)
 ```
 
-## 修复步骤（每步：备份→改→node --check / py_compile→重启验证）
+## Repair Steps (each: backup → edit → node --check / py_compile → restart & verify)
 
-### OD 侧（②③④）— 改完需完全重启 OD
+### OD side (②③④) — full OD restart required
 
-1. **取证真身**：`Get-CimInstance Win32_Process | Where CommandLine -match "daemon-sidecar"` 看加载路径
-2. **备份**：`chunk-X.mjs → chunk-X.mjs.bak-<日期>`
-3. **②** `hermesAgentDef` 的 `buildArgs` 行后加 `resumesSessionViaAcpLoad: true,`
+1. **Prove the runtime path** from the daemon-sidecar process command line.
+2. **Backup**: `chunk-X.mjs → chunk-X.mjs.bak-<date>`.
+3. **②** in `hermesAgentDef`, after `buildArgs`: `resumesSessionViaAcpLoad: true,`
 4. **③** `durableSessionId = typeof result.openCodeSessionId === "string" ? result.openCodeSessionId : (typeof result.sessionId === "string" ? result.sessionId : null);`
 5. **④** `writeRpc(nextId, "session/load", { sessionId: resumeSessionId, cwd: effectiveCwd, mcpServers: mcpServers ?? [] }, "session/load");`
-6. **重启**：优雅关 GUI 主进程（其余进程自动退出），PowerShell `Start-Process` 分离式启动
-   - ⚠️ 禁止 bash `(... &)` 后台启动——stdout 管道随终端关闭 → Electron 主进程 EPIPE 崩溃弹窗
+6. **Restart**: close the OD GUI gracefully (all OD processes exit with it), relaunch via PowerShell `Start-Process`.
+   - ⚠️ Never launch OD from a bash background job — the stdout pipe dies with the terminal and the Electron main process crashes with EPIPE.
 
-### Hermes 侧（⑤⑥⑦）— acp 进程每回合新拉，改完即生效，无需重启
+### Hermes side (⑤⑥⑦) — live on the next message, no restart
 
-5. **⑤** `schema.py` 的 `LoadSessionResponse` 加：
-   ```python
-   session_id: Annotated[Optional[str], Field(alias="sessionId")] = None
-   ```
-   `server.py` 的 `load_session` 返回值加 `session_id=session_id,`
-6. **⑥** `server.py` 加函数并在 `run_conversation` 调用处使用：
-   ```python
-   def _extract_user_voice(text: str) -> str:
-       import re as _re
-       if not text:
-           return text
-       m = _re.search(r"(?:^|\n)#{1,4}\s*(?:user|User request)\s*\r?\n(?:\r?\n)?", text)
-       if m:
-           tail = text[m.end():].strip()
-           if tail:
-               return tail
-       return text
-   ```
-   `persist_user_message=_extract_user_voice(user_text) or "[Image attachment]",`
-   - ⚠️ `import re` 必须放函数内或确认模块顶部已导入——漏了就是 `name 're' is not defined` 运行时炸
-   - ⚠️ 模型仍收全信封（`user_content` 不动），只改入库文本
-7. **⑦** `session.py` SessionState 加 `skip_history_replay: bool = False`；`server.py` initialize 存 `self._od_client_name = client_info.name`；load/resume 开头打标 `state.skip_history_replay = "open-design" in client_name.lower()`；两处 `try: await self._replay_session_history(state)` 包上 `if not getattr(state, "skip_history_replay", False):`（⚠️ 包裹后 except 块体整体加深一级缩进）
-
-### 验证（每步的验收标准）
-
-| 断点 | 验收 |
-|------|------|
-| ②③ | OD 同一窗发两句 → `hermes sessions list` 只新增 1 个 session；OD 库 `app.sqlite` 的 `agent_sessions` 表出现映射行 |
-| ④⑤ | OD 窗不再报 Invalid params / invalid session/new response |
-| ⑥ | Hermes desktop 该消息显示用户原话；新会话自动标题=原话主题 |
-| ⑦ | OD 窗不再重播旧回复，直接出新回答 |
-| 终局 | 一个 OD 项目窗长期只对应一个 session；回答引用几小时前的上下文=真 resume |
-
-## 历史存量清理（信封→原话批量转换）
+5. **⑤** `schema.py` `LoadSessionResponse`: `session_id: Annotated[Optional[str], Field(alias="sessionId")] = None`; echo it in `load_session`'s return.
+6. **⑥** add to `server.py` and use at the `run_conversation` call site:
 
 ```python
-# 前置：state.db 整库备份 + dry-run 清单用户过目 + 事务包裹
-# 范围：role='user' AND source='acp' AND content 匹配信封
-# 用同一个 _extract_user_voice 提取；FTS 有 update 触发器自动同步索引
-# 活跃会话的信封同时是 resume 上下文，但 OD 每回合重注入完整新信封，改旧信封影响趋近零
+def _extract_user_voice(text: str) -> str:
+    import re as _re
+    if not text:
+        return text
+    m = _re.search(r"(?:^|\n)#{1,4}\s*(?:user|User request)\s*\r?\n(?:\r?\n)?", text)
+    if m:
+        tail = text[m.end():].strip()
+        if tail:
+            return tail
+    return text
+
+persist_user_message=_extract_user_voice(user_text) or "[Image attachment]",
 ```
 
-## 常见错误（全部实测踩过）
+- ⚠️ `import re` inside the function (or verify the module header) — a missing import kills the turn with `name 're' is not defined`.
+- ⚠️ The model still receives the full envelope (`user_content` untouched); only the archive is cleaned.
 
-| 坑 | 后果 | 防范 |
-|----|------|------|
-| patch D 盘安装目录 | 改了不生效，白测一轮 | 先取证 daemon-sidecar 命令行 |
-| bash 后台启动 OD | EPIPE 主进程崩溃弹窗 | Start-Process 分离式启动 |
-| 正则只写 `## user` | 提取静默失败，实战全英文 | 用真实信封（从 DB 取）回归测试 |
-| 函数用 re 未导入 | 运行时 `name 're' is not defined` | import 放函数内 |
-| 冒烟测试手动注入依赖 | 掩盖真实 import 错误 | 用 `from acp_adapter.server import X` 真实链验证 |
-| 修缩进时从旧备份回滚 | 冲掉已打的补丁 | 备份随修复同步更新到最新 |
-| 杀 daemon 进程 | 它是 agent 会话祖先进程且重启换端口，会话全失联 | 只重启 OD GUI，daemon 随之收尾 |
-| OD 自动更新换版本目录 | 磁盘补丁丢失 | 升级后重打②③④；Hermes 更新重装 venv 冲掉⑤⑥⑦ |
+7. **⑦** `session.py` `SessionState`: `skip_history_replay: bool = False`. In `server.py` `initialize`: `self._od_client_name = client_name`. In `load_session`/`resume_session` after `update_cwd`: `state.skip_history_replay = "open-design" in client_name.lower()`. Wrap both `_replay_session_history(state)` calls in `if not getattr(state, "skip_history_replay", False):` (indent the except bodies one level deeper).
 
-## 相关
+### Verification per defect
 
-- 16:9 尺寸映射（chunk-N7AF5FHP 的 AIHUBMIX_IMAGE_ASPECT_TO_SIZE）是同目录独立补丁
-- 会话归档清理用 `hermes sessions archive --title <模板名> --dry-run` 预演
-- OD↔Hermes 架构：OD→Hermes 实时全同步；Hermes→OD 无文字通道（产品架构）；知识层共享（同 HERMES_HOME 的 memory + session_search）
+| Defect | Acceptance |
+|--------|-----------|
+| ②③ | Two messages in one OD window → `hermes sessions list` grows by exactly 1; OD `agent_sessions` gains a row |
+| ④⑤ | No more Invalid params / invalid session/new response |
+| ⑥ | Desktop transcript shows the user's words; auto-title = topic of the actual prompt |
+| ⑦ | No replay spam; direct answer to the new message |
+| Final | One OD project window maps to one session long-term; answers recall hours-old context = true resume |
+
+## Fragment Consolidation (history cleanup)
+
+See `scripts/consolidate.py` in the repo. Pipeline:
+
+1. Translate stored envelopes to user voice (same extraction, two-pass for inline history markers).
+2. Assign each ACP fragment to an OD project via the `projects/<uuid>` path embedded in envelopes; fallback: activity-window overlap with OD conversations (coverage ≥ 50%, tighter window wins ties).
+3. Merge messages into each project's newest session ("ledger") by rewriting `session_id` — Hermes resumes by auto-increment row id, so the timeline stays chronological with zero extra work.
+4. Rename ledgers to the OD project's name; pre-fill OD's `agent_sessions` mapping (no unique constraint — use DELETE+INSERT in a transaction).
+5. **Ask the user** before any cleanup: archive (recommended, reversible), keep, or delete the emptied fragments.
+
+## Pitfalls (all hit in production)
+
+| Pitfall | Consequence | Prevention |
+|---------|-------------|------------|
+| Patching the install directory | No effect; a wasted test cycle | Prove the daemon-sidecar command line first |
+| Launching OD from a bash background job | EPIPE crash dialog | PowerShell `Start-Process` |
+| Regex covering only `## user` | Silent failure; half the envelopes stay | Regression-test with a REAL envelope from the DB |
+| Helper uses `re` without import | Runtime `name 're' is not defined` | Import inside the function |
+| Smoke tests injecting dependencies manually | Masks real import errors | Verify via real import: `from acp_adapter.server import X` |
+| Restoring from a stale backup mid-fix | Wipes already-applied patches | Keep backups in sync with the latest good state |
+| Killing the daemon process | It's the ancestor of live sessions and changes ports on restart | Close the OD GUI instead; daemon exits with it |
+| OD auto-update (new version dir) | Disk patches lost | Re-apply ②③④; Hermes update/reinstall wipes ⑤⑥⑦ |
+
+## Related
+
+- Image size mapping (16:9 → 2752x1536 in `chunk-N7AF5FHP.mjs`) is an independent neighbor patch.
+- Archive sweeps: `hermes sessions archive --title <template-name> --dry-run` first, always.
+- Architecture: OD→Hermes syncs in real time; Hermes→OD has no text channel (product architecture). Knowledge flows through the shared brain (memory + session search on the same HERMES_HOME).
